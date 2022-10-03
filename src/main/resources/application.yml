@@ -1,0 +1,7 @@
+server:
+  port: 8083
+inventory_service_name: inventory-service
+inventory_service_url: http://localhost:8082
+author_service_name: author-service
+author_service_url: http://localhost:8081
+
