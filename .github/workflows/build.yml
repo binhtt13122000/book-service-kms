@@ -1,0 +1,74 @@
+name: Build and Deploy to ECR
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_REGION: ${{ secrets.AWS_REGION }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      MY_AWS_REGION: ${{ secrets.MY_AWS_REGION }}
+      SPRING_PROFILES_ACTIVE: aws
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up JDK 11
+        uses: actions/setup-java@v3
+        with:
+          java-version: '11'
+          distribution: 'temurin'
+
+      - name: Build with Maven
+        run: |
+          mvn -B package --file pom.xml
+          mkdir -p artifacts/target && cp target/*.jar artifacts/target && cp Dockerfile artifacts 
+          cd artifacts && ls
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: action-github-artifacts
+          path: artifacts
+
+  deploy:
+    needs: [build]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: action-github-artifacts
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v1
+
+      - name: Build, tag, and push image to Amazon ECR
+        id: build-image
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          IMAGE_TAG: ${{ github.sha }}
+          ECR_REPOSITORY: kms-service
+          ECR_SERVICE: book-service
+        run: |
+          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$ECR_SERVICE .
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:$ECR_SERVICE
+          echo "::set-output name=image::$ECR_REGISTRY/$ECR_REPOSITORY:$ECR_SERVICE"
+
+
