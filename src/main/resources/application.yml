@@ -1,7 +1,14 @@
 server:
   port: 8083
-inventory_service_name: inventory-service
-inventory_service_url: http://localhost:8082
-author_service_name: author-service
-author_service_url: http://localhost:8081
+inventory_service:
+  endpoint: http://localhost:8082
+  name: inventory-service
+author_service:
+  name: author-service
+  endpoint: http://localhost:8081
 
+jwt:
+  secret: 123453434sdasdzxZxZxsdasdsxXzXZXzmx>zxm.zLXXCMZXCZMXLAWDLMMXCMZXCMZX123132
+  issuer: thanhbinh
+  audience: thanhbinh
+  expired: 864000000

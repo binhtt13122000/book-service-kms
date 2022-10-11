@@ -13,8 +13,6 @@ jobs:
       AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
       AWS_REGION: ${{ secrets.AWS_REGION }}
       AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-      MY_AWS_REGION: ${{ secrets.MY_AWS_REGION }}
-      SPRING_PROFILES_ACTIVE: aws
     permissions:
       contents: read
       packages: write
@@ -59,16 +57,16 @@ jobs:
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v1
 
-      - name: Build, tag, and push image to Amazon ECR
-        id: build-image
-        env:
-          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-          IMAGE_TAG: ${{ github.sha }}
-          ECR_REPOSITORY: kms-service
-          ECR_SERVICE: book-service
-        run: |
-          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$ECR_SERVICE .
-          docker push $ECR_REGISTRY/$ECR_REPOSITORY:$ECR_SERVICE
-          echo "::set-output name=image::$ECR_REGISTRY/$ECR_REPOSITORY:$ECR_SERVICE"
+#      - name: Build, tag, and push image to Amazon ECR
+#        id: build-image
+#        env:
+#          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+#          IMAGE_TAG: ${{ github.sha }}
+#          ECR_REPOSITORY: kms-service
+#          ECR_SERVICE: book-service
+#        run: |
+#          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$ECR_SERVICE .
+#          docker push $ECR_REGISTRY/$ECR_REPOSITORY:$ECR_SERVICE
+#          echo "::set-output name=image::$ECR_REGISTRY/$ECR_REPOSITORY:$ECR_SERVICE"
 
 
